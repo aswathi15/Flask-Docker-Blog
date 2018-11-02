@@ -35,8 +35,12 @@ def func_predict():
     content = dataset_func_OCR(UPLOAD_FOLDER,filename,log)
     transformed_content = my_tfidf.transform([content])
     y_pred = my_SGD.predict(transformed_content)
+    y_prob = my_SGD.predict_proba(transformed_content)
+    print(type(y_prob))
+    max_prob = max(y_prob[0])*100
     print(y_pred)
-    output = {'prediction':''.join(y_pred)}
+    print(max_prob)
+    output = {'filename':filename,'prediction':''.join(y_pred),'confidence':max_prob}
     return jsonify(output)
 
 if __name__ == '__main__':

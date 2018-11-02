@@ -1,5 +1,5 @@
 # 1) Implementing just the basic linear model using SGD only
-
+# 2) Stratified K-Fold cross validation
 
 ###############################################
 ### Libraries imported (Dependencies)
@@ -15,6 +15,7 @@ import configparser
 from config import config
 from nltk.corpus import stopwords
 from sklearn.metrics import (brier_score_loss, precision_score, recall_score, f1_score)
+from sklearn.model_selection import StratifiedKFold
 from sklearn.model_selection import train_test_split
 stop = stopwords.words('english')
 ###############################################################################################
@@ -28,9 +29,16 @@ log_file = config.get('dev','log_file')
 log = open(log_file,'w')
 X = df['Text']
 y = df['Target']
+############################################################################################
+skf = StratifiedKFold(n_splits=10,random_state = None)
+
 ##############################################################################################
+for train_index, test_index in skf.split(X,y):
+    print("Train:", train_index, "Validation:", test_index)
+    X_train, X_test = X[train_index], X[test_index]
+    y_train, y_test = y[train_index], y[test_index]
 # Split the dataframe into train and test
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.3, random_state = 100)
+#X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.3, random_state = 100)
 ##############################################################################################
 # Initialize the classes for tfidf, count vectorizer
 # Fit_transform the data
@@ -43,7 +51,7 @@ def data_transform(data1,data2):
 
 ###############################################################################################
 X_train_tfidf,X_test_tfidf,tfidf= data_transform(X_train,X_test)
-clf_SGD = linear_model.SGDClassifier(class_weight='balanced').fit(X_train_tfidf, y_train)
+clf_SGD = linear_model.SGDClassifier(class_weight='balanced',loss='log',random_state=100).fit(X_train_tfidf, y_train)
 y_pred = clf_SGD.predict(X_test_tfidf)
 
 
